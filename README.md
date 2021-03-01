@@ -27,8 +27,6 @@ then get the container id with:
 docker ps -q
 ```
 example:
-CONTAINER ID   IMAGE                        COMMAND                  CREATED         STATUS         PORTS                    NAMES
-af092b1443bf   apicbase-recipes_abrecipes   "python3 manage.py r…"   4 minutes ago   Up 7 seconds   0.0.0.0:5000->5000/tcp   abrecipes
 
 then run the following command with the container id to enter inside the container
 ```bash
