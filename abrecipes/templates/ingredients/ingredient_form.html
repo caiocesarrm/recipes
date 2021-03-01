@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% load static %}
+{% block customcss %}
+<link href="{% static 'css/ingredients/ingredient_form.css' %}" rel="stylesheet">
+{% endblock customcss %}
+
+
+{% block current_section %}
+{% if ingredient.id %}
+Edit Ingredient
+{% else %}
+Create Ingredient
+{% endif %}
+{% endblock current_section %}
+
+{% block content %}
+
+<div class="ingredient-form">
+    <div class="row">
+        <form id="form-ingredient" class="col s12" autocomplete="off">
+            <div class="row">
+                <div class="input-field col s12">
+                    <input value="{{ingredient.name}}" id="ingredient_name" class="validate" type="text" required>
+                    <label for="ingredient_name">Ingredient Name*</label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="input-field col s12">
+                    <input value="{{ingredient.article_number}}" id="article_number" class="validate" type="text" required>
+                    <label for="article_number">Article Number*</label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="input-field col s4">
+                    <input id="cost" step="any" min="0" type="number" value="{{ingredient.cost|stringformat:".2f"}}" class="validate" required>
+                    <label for="cost">Cost€*</label>
+                </div>
+                <div class="input-field col s4">
+                    <input id="amount_per_cost" step="any" min="0" type="number" value="{{ingredient.amount_per_cost|stringformat:".2f"}}" class="validate" required>
+                    <label for="amount_per_cost">Amount*</label>
+                </div>
+                <div class="input-field col s4">
+                    <select id="metric" class="validate" required>
+                        <option value="" disabled selected>Choose an metric</option>
+                        {% for choice in unit_choices %}
+                        {% if ingredient.metric == choice.0 %}
+                        <option value="{{choice.0}}" selected>{{choice.1}}</option>
+                        {% else %}
+                        <option value="{{choice.0}}">{{choice.1}}</option>
+                        {% endif %}
+                        {% endfor %}
+                    </select>
+                    <label>Metric*</label>
+                </div>
+            </div>
+    
+            <button class="btn waves-effect waves-light amber lighten-2" type="submit">Submit
+                <i class="material-icons right">send</i>
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+    var ingredientId = {{ingredient.id}}
+    document.getElementById('form-ingredient').addEventListener('submit', submitIngredient, false)
+
+    async function submitIngredient(evt) {
+        evt.preventDefault();
+        var formData = {
+            name: document.getElementById('ingredient_name').value,
+            cost:document.getElementById('cost').value,
+            article_number: document.getElementById('article_number').value,
+            amount_per_cost: document.getElementById('amount_per_cost').value,
+            metric: document.getElementById('metric').value,
+        }
+        let action = window.location.pathname.split('/');
+        console.log(action)
+        console.log(formData)
+        if (action[action.length - 2] == 'new') {
+            createIngredient(formData)
+        } else if (action[action.length - 2] == 'edit') {
+            updateIngredient(formData)
+        }
+    }
+
+    async function createIngredient(form) {
+        var headers = new Headers();
+        headers.append("Content-Type", "application/json");
+
+        var content = JSON.stringify(form);
+        var requestOptions = {
+        method: 'POST',
+        headers: headers,
+        body: content,
+        };
+    
+        fetch("/api/ingredients/", requestOptions)
+        .then(response => response.text())
+        .then(result => {window.location = '/ingredients/'})
+        .catch(error => console.log('error', error));
+    }
+
+    async function updateIngredient(form) {
+        var headers = new Headers();
+        headers.append("Content-Type", "application/json");
+
+        var content = JSON.stringify(form);
+        var requestOptions = {
+        method: 'PUT',
+        headers: headers,
+        body: content,
+        };
+    
+        fetch(`/api/ingredients/${ingredientId}/`, requestOptions)
+        .then(response => response.text())
+        .then(result => {window.location = `/ingredients/`})
+        .catch(error => console.log('error', error));
+    }
+    M.AutoInit();
+</script>
+
+
+{% endblock content %}

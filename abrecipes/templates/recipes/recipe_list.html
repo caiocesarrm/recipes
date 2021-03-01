@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block customcss %}
+<link href="{% static 'css/recipes/recipe_list.css' %}" rel="stylesheet">
+{% endblock customcss %}
+
+{% block title %}Recipes{% endblock %}
+
+{% block current_section %}
+Recipes
+{% endblock current_section %}
+
+{% block content %}
+
+<div class="recipe-list">
+    <div class="recipe-list-search">
+        <div class="row">
+            <div class="input-field col s6">
+                <input id="search_recipes" type="text" oninput="onSearchRecipes(this)">
+                <label for="search_recipes">Search recipes</label>
+            </div>
+            <div class="col s2 right">
+                <a href="/recipes/new/" class="new-recipe waves-effect waves-light btn blue-grey lighten-5"><i class="material-icons right">add</i>New Recipe</a>
+            </div>
+            
+        </div>
+    </div>
+    <div id="recipe-cards"class="recipe-cards-list">
+        {% for recipe in recipes %}
+        <a class="recipe" href="{% url 'recipes:recipe_detail' recipe.id %}">
+            <div class="header">
+                <div class="image">
+    
+                </div>
+                <div class="name">
+                    {{recipe.name}}
+                </div>
+                <div class="price">
+                    {{recipe.price}}<img src="{% static 'images/euro-currency-symbol.svg' %}"" />
+                </div>
+            </div>
+            <ul class=ingredients>
+                {% for ri in recipe.recipe_ingredient.all %}
+                <li class="ingredient">{{ri.amount}}{{ri.unit}} {{ri.ingredient.name}}</li>
+                {% endfor %}
+            </ul>
+        </a>
+    {% endfor %}
+    </div>
+   
+</div>
+
+<script>
+
+    async function onSearchRecipes(e) {
+        const response = await fetch(`/api/recipes/?search=${e.value}`, {method: 'GET'})
+        const result = await response.json()
+        renderRecipes(result)
+    }
+
+    async function renderRecipes(data) {
+        document.querySelectorAll('.recipe').forEach(function(e){
+            e.remove()
+            
+        })
+
+        const recipeCollection = document.getElementById('recipe-cards')
+        data.forEach((d) => {
+            var recipe = `<a class="recipe" href="/api/recipes/${d.id}/">
+                                <div class="header">
+                                    <div class="image">
+                                    </div>
+                                    <div class="name">
+                                        ${d.name}
+                                    </div>
+                                    <div class="price">
+                                        ${d.price}<img src="{% static 'images/euro-currency-symbol.svg' %}"" />
+                                    </div>
+                                </div>
+                                <ul class=ingredients>`
+
+            d.ingredients.forEach(i => {
+                recipe += `<li class="ingredient">${i.amount}${i.ingredient_metric} ${i.ingredient_name}</li>`
+            })
+                                   
+            recipe += "</ul></a>"
+            const fragment = document.createRange().createContextualFragment(recipe)
+            recipeCollection.appendChild(fragment)
+            
+        })
+    }
+    M.AutoInit();
+</script>
+
+{% endblock content %}

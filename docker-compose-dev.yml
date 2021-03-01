@@ -1,0 +1,57 @@
+version: "3"
+
+services:
+  abrecipes:
+    container_name: abrecipes
+    build: .
+    command: python3 manage.py runserver 0.0.0.0:5000
+    ports:
+      - 5000:5000
+    restart: always
+    env_file:
+      - ./.envs/.env-dev
+    volumes:
+      - ./:/app
+
+  celery:
+    build: .
+    command: watchmedo auto-restart --directory=./ --pattern="*tasks.py;*celery_app.py" --recursive -- celery -A config.celery_app worker -P prefork -l INFO --concurrency=3 -Q email_dev,image_processing_dev
+    volumes:
+      - ./:/app
+    restart: always
+    depends_on:
+      - rabbitmq
+      - abrecipes
+    env_file:
+      - ./.envs/.env-dev
+
+  rabbitmq:
+    container_name: rabbitmq
+    hostname: rabbitmq
+    build:
+      context: ./rabbitmq/
+      dockerfile: DockerfileRabbitMq
+    env_file:
+      - ./.envs/.env-dev
+    expose:
+      - 15672
+      - 50008
+    ports:
+      - "50008:5672"
+      - 50007:15672 # here, we can access rabbitmq management plugin
+    command: /rabbitmqinit.sh
+    volumes:
+      - ./rabbitmq/data/rabbitmq:/var/lib/rabbitmq/mnesia
+      - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+
+  flower:
+    image: mher/flower:0.9.5
+    expose:
+      - 50009
+    ports:
+      - 50009:50009
+    depends_on:
+      - rabbitmq
+      - celery
+    env_file:
+      - ./.envs/.env-dev

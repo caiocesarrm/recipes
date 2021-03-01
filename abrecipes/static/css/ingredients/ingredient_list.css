@@ -1,0 +1,13 @@
+.ingredient-list {
+    display: flex;
+    flex-direction: column;
+    background-color: white;
+    margin: 0px 30px;
+    padding: 24px;
+    min-width: 240px;
+    max-width: 1200px;
+    border-radius: 10px;
+    box-shadow: 0 0 14px 0 rgb(0, 0, 0, 0.2);
+    width: 100%;
+  }
+  

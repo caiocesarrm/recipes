@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+{% load static %}
+{% block customcss %}
+<link href="{% static 'css/recipes/recipe_form.css' %}" rel="stylesheet">
+{% endblock customcss %}
+{% block content %}
+
+{% block current_section %}
+{% if recipe.id %}
+Edit Recipe
+{% else %}
+Create Recipe
+{% endif %}
+{% endblock current_section %}
+
+<div class="recipe-form">
+    <div class="row">
+        <form id="form-recipe" class="col s12" autocomplete="off">
+            <div class="row">
+                <div class="input-field col s12">
+                    <input value="{{recipe.name}}" id="recipe_name" class="validate" type="text" required>
+                    <label for="recipe_name">Recipe Name*</label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="input-field col s12">
+                    <textarea id="instructions" class="materialize-textarea validate" required>{{recipe.instructions}}</textarea>
+                    <label for="instructions">Instructions*</label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="input-field col s4">
+                    <input id="price" step="any" min="0" type="number" value="{{recipe.price|stringformat:".2f"}}" class="validate" required>
+                    <label for="price">Suggested Price €*</label>
+                    
+                </div>
+            </div>
+            <div class="row">
+                <div class="input-field col s6">
+                    <input id="search_ingredients" type="text" oninput="onSearch(this)">
+                    <label for="search_ingredients">Search ingredients</label>
+                </div>
+            </div>
+            
+        
+            <div class="row">
+                <div class="col s12">
+                    <ul id="ingredients" class="collection with-header">
+                        <li class="collection-header amber lighten-2">All Ingredients</li>
+                        {% for ingredient in ingredients %}
+                            <li class="collection-item ingredient" name="{{ingredient.name}}"  metric="{{ingredient.get_metric_display}}" iid="{{ingredient.id}}">
+                                <div>{{ingredient.name}}
+                                    <a href="#!" class="secondary-content">
+                                        <i class="material-icons" onclick="addIngredient(this)" iid="{{ingredient.id}}">add
+                                        </i>
+                                    </a>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col s12">
+                    <table>
+                        <thead>
+                            <tr>
+                            </tr>
+                        </thead>
+                        <tbody id="recipe-ingredients">
+                            {% for ri in recipe.recipe_ingredient.all %}
+                            <tr riid="{{ri.ingredient.id}}">
+                                <td>{{ri.ingredient.name}}</td>
+                                <td>
+                                    <div class="amount-input">
+                                        <div class="input-field col s4">
+                                            <input id="amount-{{ri.ingredient.id}}" step="any" min="0" type="number" value="{{ri.amount|stringformat:".2f"}}" class="validate" required>
+                                            <label for="amount-{{ri.ingredient.id}}">Amount</label>
+                                        </div>
+                                        <div class="metric col s1">{{ri.ingredient.metric}}</div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <a href="#!" class="secondary-content">
+                                        <i class="material-icons" onclick="removeIngredient(this)" riid="{{ri.ingredient.id}}">delete</i>
+                                    </a>
+                                </td>
+                                
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                
+                </div>
+                
+            </div>
+            <button class="btn waves-effect waves-light amber lighten-2" type="submit">Submit
+                <i class="material-icons right">send</i>
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+    var recipeId = {{recipe.id}}
+    document.getElementById('form-recipe').addEventListener('submit', submitRecipe, false)
+
+    async function createRecipe(form) {
+        var headers = new Headers();
+        headers.append("Content-Type", "application/json");
+
+        var content = JSON.stringify(form);
+        var requestOptions = {
+        method: 'POST',
+        headers: headers,
+        body: content,
+        };
+    
+        fetch("/api/recipes/", requestOptions)
+        .then(response => response.text())
+        .then(result => {window.location = '/recipes/'})
+        .catch(error => console.log('error', error));
+    }
+
+    async function updateRecipe(form) {
+        var headers = new Headers();
+        headers.append("Content-Type", "application/json");
+
+        var content = JSON.stringify(form);
+        var requestOptions = {
+        method: 'PUT',
+        headers: headers,
+        body: content,
+        };
+    
+        fetch(`/api/recipes/${recipeId}/`, requestOptions)
+        .then(response => response.text())
+        .then(result => {window.location = `/recipes/${recipeId}/`})
+        .catch(error => console.log('error', error));
+    }
+
+    async function onSearch(e) {
+        const response = await fetch(`/api/ingredients/?search=${e.value}`, {method: 'GET'})
+        const result = await response.json()
+        renderIngredients(result)
+    }
+
+    async function renderIngredients(data) {
+        document.querySelectorAll('.ingredient').forEach(function(e){
+            e.remove()
+        })
+        const ingredientCollection = document.getElementById('ingredients')
+        data.forEach((d) => {
+            const ingredient = `<li class="collection-item ingredient" name="${d.name}" metric="${d.metric_display}" iid="${d.id}">
+                    <div>${d.name}
+                        <a href="#!" class="secondary-content">
+                            <i class="material-icons" onclick="addIngredient(this)" iid="${d.id}">add
+                            </i>
+                        </a>
+                    </div>
+                </li>`
+            const fragment = document.createRange().createContextualFragment(ingredient)
+            ingredientCollection.appendChild(fragment)
+            
+        })
+    }
+
+    async function addIngredient(e) {
+        let recipeIngredients = await getRecipeIngredients()
+        let hasIngredient = false
+        recipeIngredients.forEach(i => {
+            if (i.ingredient === parseInt(e.attributes['iid'].value, 10)){
+                hasIngredient = true
+            }
+        })
+        if (!hasIngredient) {
+            const id = parseInt(e.attributes.iid.value, 10)
+            const liParent = document.querySelector(`li[iid='${id}']`);
+            const recipeIngredientCollection = document.getElementById('recipe-ingredients')
+            let row = recipeIngredientCollection.insertRow(-1);
+            row.setAttribute("riid", id);
+            let name = row.insertCell(0);
+            let amount = row.insertCell(1);
+            let action = row.insertCell(2);
+            name.innerHTML = `<td>${liParent.attributes.name.value}</td>`
+            amount.innerHTML = `<td>
+                                    <div class="amount-input">
+                                        <div class="input-field col s4">
+                                            <input id="amount-${id}" step="any" min="0" type="number" class="validate" required>
+                                            <label for="amount-${id}">Amount</label>
+                                        </div>
+                                        <div class="metric col s1">${liParent.attributes.metric.value}</div>
+                                    </div>
+                                </td>`
+            action.innerHTML = `<a href="#!" class="secondary-content">
+                                    <i class="material-icons" onclick="removeIngredient(this)" riid="${id}">delete</i>
+                                </a>`
+            M.AutoInit();
+        }
+        
+    }
+
+    async function removeIngredient(e) {
+        const rowParent = document.querySelector(`tr[riid='${parseInt(e.attributes.riid.value, 10)}']`);
+        rowParent.remove()
+    }
+
+    async function getRecipeIngredients() {        
+        let ingredients = []
+        let ingredientsRows = document.querySelectorAll(`tr[riid]`);
+        ingredientsRows.forEach((ingredient) => {
+            const amount = ingredient.cells[1].querySelector('input').value
+            const id = parseInt(ingredient.attributes.riid.value, 10)
+            const name = ingredient.cells[0].textContent
+            ingredients.push({'ingredient':id, 'amount':amount, 'name':name})
+        })
+
+        return ingredients
+    }
+
+    async function submitRecipe(evt) {
+        evt.preventDefault();
+        var formData = {
+            name: document.getElementById('recipe_name').value,
+            instructions:document.getElementById('instructions').value,
+            price: document.getElementById('price').value,
+            ingredients: await getRecipeIngredients(),
+        }
+        let action = window.location.pathname.split('/');
+        if (action[action.length - 2] == 'new') {
+            createRecipe(formData)
+        } else if (action[action.length - 2] == 'edit') {
+            updateRecipe(formData)
+        }
+    }
+
+    M.AutoInit();
+</script>
+
+{% endblock content %}

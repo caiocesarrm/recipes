@@ -1,0 +1,67 @@
+{% load static i18n %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>{% block title %}Abrecipes{% endblock title %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link rel="icon" href="{% static 'images/favicons/favicon_1.ico' %}">
+
+    {% block css %}
+    <link href="{% static 'css/reset.css' %}" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;600&display=swap" rel="stylesheet">
+    
+    <link href="{% static 'css/nav.css' %}" rel="stylesheet">
+    
+    <link href="{% static 'css/project.css' %}" rel="stylesheet">
+    
+    
+    {% block customcss %}
+    {% endblock customcss %}
+    
+    {% endblock  %}
+
+    {% block javascript %}
+      <script defer src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+      <script defer src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+      <script defer src="{% static 'js/project.js' %}"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    {% endblock javascript %}
+  </head>
+
+  <body>
+    <nav class="header">
+      <input type="checkbox" id="nav-check">
+      <div class="nav-header">
+        <div class="nav-title">
+          Apicbase Recipes
+        </div>
+      </div>
+      <div class="nav-links">
+        <a href="{% url 'recipes:ingredient_list' %}">Ingredients</a>
+        <a href="{% url 'recipes:recipe_list' %}">Recipes</a>
+      </div>
+    </nav>
+    <nav class="current-section">
+      <input type="checkbox" id="nav-check">
+      <div class="nav-header">
+        <div class="nav-title">
+          {% block current_section %}
+          {% endblock current_section %}
+        </div>
+      </div>
+    </nav>
+    <div class="main-content">
+      {% block content %}
+      {% endblock content %}
+    </div>
+
+      
+  </body>
+</html>
+ 

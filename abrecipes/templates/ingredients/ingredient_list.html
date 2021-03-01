@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block customcss %}
+<link href="{% static 'css/ingredients/ingredient_list.css' %}" rel="stylesheet">
+{% endblock customcss %}
+
+{% block current_section %}
+Ingredients
+{% endblock current_section %}
+
+{% block content %}
+
+<div class="ingredient-list">
+    <div class="ingredient-search">
+        <div class="row">
+            <div class="input-field col s6">
+                <input id="search_ingredient" type="text" oninput="onSearchIngredients(this)">
+                <label for="search_ingredient">Search ingredients by name or article number</label>
+            </div>
+            <div class="col s2 right">
+                <a href="/ingredients/new/" class="new-ingredient waves-effect waves-light btn blue-grey lighten-5"><i class="material-icons right">add</i>New Ingredient</a>
+            </div>
+            
+        </div>
+    </div>
+    <div>
+        <table>
+            <thead>
+              <tr>
+                  <th>Name</th>
+                  <th>Cost</th>
+                  <th>Article Number</th>
+                  <th></th>
+              </tr>
+            </thead>
+    
+            <tbody id="ingredients">
+            {% for ingredient in ingredients %}
+                <tr class="ingredient">
+                    <td>{{ingredient.name}}</td>
+                    <td>{{ingredient.cost}}€ per {{ingredient.amount_per_cost}}{{ingredient.metric}}</td>
+                    <td>{{ingredient.article_number}}</td>
+                    <td><a  href="{% url 'recipes:ingredient_edit' ingredient.id %}" class="btn-floating offset-s10 btn-small waves-effect waves-light green"><i class="material-icons">edit</i></a></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div> 
+</div>
+
+<script>
+
+    async function onSearchIngredients(e) {
+        const response = await fetch(`/api/ingredients/?search=${e.value}`, {method: 'GET'})
+        const result = await response.json()
+        renderIngredients(result)
+    }
+
+    async function renderIngredients(data) {
+        document.querySelectorAll('.ingredient').forEach(function(e){
+            e.remove()
+        })
+        const ingredientCollection = document.getElementById('ingredients')
+        data.forEach((d) => {
+            let row = ingredientCollection.insertRow(-1);
+            row.setAttribute("class", "ingredient");
+            let name = row.insertCell(0);
+            let cost = row.insertCell(1);
+            let article = row.insertCell(2);
+            name.innerHTML = `<td>${d.name}</td>`
+            cost.innerHTML = `<td>${d.cost}€ per ${d.amount_per_cost}${d.metric}</td>`
+            article.innerHTML = `<td>${d.article_number}</td>`
+        })
+        M.AutoInit();
+    }
+
+    M.AutoInit();
+</script>
+
+{% endblock content %}

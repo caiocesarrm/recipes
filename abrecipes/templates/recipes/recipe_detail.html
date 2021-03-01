@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block customcss %}
+<link href="{% static 'css/recipes/recipe_detail.css' %}" rel="stylesheet">
+{% endblock customcss %}
+
+{% block title %}Recipes{% endblock %}
+
+{% block current_section %}
+Recipe Detail
+{% endblock current_section %}
+
+
+{% block content %}
+
+<div id="modalDelete" class="modal col s4">
+  <div class="modal-content">
+    <h4>Delete recipe {{recipe.name}}</h4>
+    <p>Are you sure you want to delete this recipe?</p>
+  </div>
+  <div class="modal-footer">
+    <a href="#!" class="modal-close waves-effect green waves-green btn-flat center no-option">No</a>
+    <a href="#!" onclick="deleteRecipe()" class="modal-close waves-effect red waves-red btn-flat">Yes</a>
+  </div>
+</div>
+
+<div class="recipe-detail">
+    <div class="row">
+        <div class="col s12">
+          <div class="card">
+            <div class="card-image recipe-image">
+              <img src="{{recipe.image_url}}">
+              <a href="{% url 'recipes:recipe_edit' recipe.id %}" class="btn-floating halfway-fab waves-effect waves-light green left modal-trigger"><i class="material-icons">edit</i></a>
+              <a href="#modalDelete" class="btn-floating halfway-fab waves-effect waves-light red modal-trigger"><i class="material-icons">delete</i></a>
+            </div>
+            <div class="card-content title">
+              <p>{{recipe.name}}</p>
+            </div>
+            <div class="divider">
+            </div>
+            <div class="instructions">
+                {{recipe.instructions}}
+            </div>
+            <div class="row center">
+              Suggested sale price: {{ recipe.price|stringformat:".2f"}}€
+            </div>
+          </div>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+              <th>Name</th>
+              <th>Cost</th>
+              <th>Article Number</th>
+          </tr>
+        </thead>
+
+        <tbody>
+        {% for ingredient in recipe.ingredients.all %}
+            <tr class="ingredient">
+                <td>{{ingredient.name}}</td>
+                <td>{{ingredient.cost}}€ per {{ingredient.amount_per_cost}}{{ingredient.metric}}</td>
+                <td>{{ingredient.article_number}}</td>
+            </tr>
+        {% endfor %}
+            <tr class="amber lighten-5">
+              <td>Total cost: {{recipe.get_ingredients_cost|stringformat:".2f"}}€</td>
+              <td></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+
+<script>
+  const recipeId = {{recipe.id}}
+
+  async function deleteRecipe() {
+    var myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+
+
+    var requestOptions = {
+      method: 'DELETE',
+      headers: myHeaders,
+    };
+
+    const response = await fetch(`/api/recipes/${recipeId}/`, requestOptions)
+    window.location = '/recipes/'
+      
+  }
+
+  M.AutoInit();
+</script>
+{% endblock content %}

@@ -1,0 +1,35 @@
+.recipe-detail {
+    background-color: white;
+    margin: 0px 30px;
+    padding: 24px;
+    min-width: 240px;
+    max-width: 1200px;
+    border-radius: 10px;
+    box-shadow: 0 0 14px 0 rgb(0, 0, 0, 0.2);
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-items: center;
+}
+
+.recipe-image > img{
+    max-width: 800px;
+    max-height: 400px;
+    object-fit: cover;
+}
+
+.instructions {
+    padding: 15px;
+    max-width: 800px;
+    max-height: 400px;
+}
+
+.title {
+    font-size: 24px;
+    font-weight: 600;
+}
+
+#modalDelete {
+    max-width: 500px;
+}

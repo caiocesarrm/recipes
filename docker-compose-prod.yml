@@ -1,0 +1,37 @@
+version: "3"
+
+services:
+  abrecipes:
+    container_name: abrecipes
+    build: .
+    ports:
+      - 50010:50010
+    command: gunicorn --bind 0.0.0.0:5000 config.wsgi -w 4 -t 10 --worker-class=gthread --threads=50 --max-requests 3000 --max-requests-jitter 200
+    restart: always
+    env_file:
+      - ./.envs/.env-prod
+    volumes:
+      - ./:/app
+    network_mode: "host"
+
+  celery:
+    build: .
+    command: watchmedo auto-restart --directory=./ --pattern="*tasks.py;*celery_app.py" --recursive -- celery -A config.celery_app worker -P prefork -l INFO --concurrency=20 -Q email_prod,image_processing_prod
+    volumes:
+      - ./:/app
+    restart: always
+    env_file:
+      - ./.envs/.env-prod
+    network_mode: "host"
+
+  flower:
+    image: mher/flower
+    expose:
+      - 5001
+    ports:
+      - 5001:5001
+    depends_on:
+      - celery
+    env_file:
+      - ./.envs/.env-prod
+    network_mode: "host"

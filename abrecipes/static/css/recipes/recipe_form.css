@@ -1,0 +1,38 @@
+.recipe-form {
+    background-color: white;
+    margin: 0px 30px;
+    padding: 24px;
+    min-width: 240px;
+    max-width: 1200px;
+    border-radius: 10px;
+    box-shadow: 0 0 14px 0 rgb(0, 0, 0, 0.2);
+    width: 100%;
+    
+}
+
+#ingredients {
+    max-height: 600px;
+    overflow: auto;
+}
+
+.amount-input {
+    margin-top: 22px;
+}
+
+select[required]:focus{
+    outline: none !important;
+}
+
+select[required]{
+    display: block;
+    padding: 0;
+    position: absolute;
+    background: transparent;
+    color: transparent;
+    border: none;
+    top: 0;
+}
+
+.metric {
+    margin-top: 44px;
+}

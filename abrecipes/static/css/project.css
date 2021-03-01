@@ -1,0 +1,36 @@
+
+
+* {
+    margin: 0;
+    padding: 0;
+    outline: 0;
+    box-sizing: border-box;
+    font-family: Rubik;
+}
+
+html, body {
+    height: 100%;
+    width: 100%;
+}
+
+body {
+    background-color: #E1E7E4;
+}
+
+.main-content {
+    background-color: #E1E7E4;
+    width: 100%;
+    min-height: calc(100% - 100px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-bottom: 50px;
+}
+
+.btn {
+    color: #33475b;
+}
+
+i {
+    color: #33475b;
+}
